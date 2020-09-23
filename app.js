@@ -133,8 +133,9 @@ const intToRoman = function(num) {
 
 const integerInput = document.querySelector('#integer');
 integerInput.addEventListener('change', e => {
-  const integer = e.target.value;
+  const integer = Math.trunc(e.target.value);
   const romanNumeral = intToRoman(integer);
   const romanNumeralDisplay = document.querySelector('#roman-numeral');
+  integerInput.value = integer;
   romanNumeralDisplay.innerText = romanNumeral;
 });
