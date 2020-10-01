@@ -133,9 +133,20 @@ const intToRoman = function(num) {
 
 const integerInput = document.querySelector('#integer');
 integerInput.addEventListener('change', e => {
-  const integer = Math.trunc(e.target.value);
+  const maxValue = 3999;
+
+  // Truncated input to an integer
+  let integer = Math.trunc(e.target.value);
+
+  // If the input is greater than the max value, use the max value
+  integer = Math.min(integer, maxValue);
+
   const romanNumeral = intToRoman(integer);
   const romanNumeralDisplay = document.querySelector('#roman-numeral');
+
+  // Set input value to truncated integer
+  // to prevent decimal inputs and inputs greater than max value
   integerInput.value = integer;
+
   romanNumeralDisplay.innerText = romanNumeral;
 });
