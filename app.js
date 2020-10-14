@@ -1,109 +1,78 @@
-//array of descending digit placeholders 
-const placeholders = [
-  1000,
-  500,
-  100,
-  50,
-  10,
-  5,
-  1
-];
- 
-const intToRoman = function(num) {
+const intToRoman = function(number) {
   //accepts nums 1 --> 3999
-  let numAsString = '';
-
-  // '0' argument represents placeholders[0], the thousands place:
-  numAsString = recursivelyGenerateRomans(0, num, numAsString);
-  return numAsString;
+  //pass in 1000 for digits value & empty string to start
+  return recursivelyGenerateRomans(1000, number, '');
 };
 
 //Starts with higher digit placeholders and calls itself recursively, moving to next largest placeholder
-//Example Arguments: (<0 -> 6>, numToBeConverted, '')
-function recursivelyGenerateRomans(placeholderIndex, number, romanString) {
+function recursivelyGenerateRomans(placeholderValue, number, romanString) {
   
-  //set up real values for indexes: 0 = 1000, 1 = 500, 2 = 100, and so on
-  const placeholderValue = placeholders[placeholderIndex];
-  const placeholderValueNext = placeholders[placeholderIndex + 2];
-  const placeholderValueHalf = placeholders[placeholderIndex + 1];
+  const divisor = determineIfHalfOrWholeDigit(placeholderValue); //ie 1000 or 500
+  const placeholderValueHalf = placeholderValue / divisor;
+  const placeholderValueNextWhole = 
+    divisor === 2 ?
+      placeholderValue / 10 :
+      placeholderValueHalf;
 
   //find number of whole placeholders in current number 
-  //update string & subtract from number 
+  //then update string & subtract from number 
   const placeholdersWhole = Math.floor(number / placeholderValue);
-  romanString = buildUpString(placeholderIndex, romanString, placeholdersWhole); 
+  romanString = buildUpString(placeholderValue, romanString, placeholdersWhole); 
   number -= placeholdersWhole * placeholderValue;
 
-
-  //check to apply subtractive method (eg, 9 = IX) if number is close enough
+  //find remainder of above divison 
   const placeholdersRemainder = placeholderValue - number;
-
-  // case: number is less than placeholder by value of next placeholder
-  if (placeholdersRemainder <= placeholderValueNext) {
-    //buildString with subtractive method:
-    romanString = buildUpString(placeholderIndex + 2, romanString);
-    romanString = buildUpString(placeholderIndex, romanString);
-    number = number - (placeholderValue - placeholderValueNext);
+  //case: number is less than placeholder by value of next placeholder ... NO HALVES!
+  //      will buildString with subtractive method
+  if (placeholdersRemainder <= placeholderValueNextWhole) {
+    romanString = buildUpString(placeholderValueNextWhole, romanString);
+    romanString = buildUpString(placeholderValue, romanString);
+    number -= placeholderValue - placeholderValueNextWhole;
   }
-  // case: number is not close enough
+  
+  //call recursively with next value or return final answer
+  if (placeholderValue > 1) {
+    return recursivelyGenerateRomans(placeholderValueHalf, number, romanString);
+  }
   else {
-    //check for Half Placeholder (500, 50) -- no need to divide, only 1 at most
-    const numIsMoreThanNextPlaceholderWhole = number >= placeholderValueHalf;
-
-    if (numIsMoreThanNextPlaceholderWhole) {
-
-      romanString = buildUpString(placeholderIndex + 1, romanString);
-      number -= placeholderValueHalf;
-    }
-    else {
-      //check to apply subtractive method (eg, 9 = IX) if number is close enough
-      //if not, will just continue on to next recursion
-      const nextPlaceholderRemainder = placeholderValueHalf - number;
-
-      if (nextPlaceholderRemainder <= placeholderValueNext) {
-        //buildString with subtractive method:
-        romanString = buildUpString(placeholderIndex + 2, romanString);
-        romanString = buildUpString(placeholderIndex + 1, romanString);
-        number = number - (placeholderValue - placeholderValueNext);
-      }  
-    }
-  }
-
-  //check if at Ones index -- end & return 
-  //else call again recursively with Placeholder Index set to next tens place (eg, 100 -> 10)
-  if (placeholderIndex >= 6) {
     return romanString;
   }
-  else {
-    placeholderIndex += 2;
-    return recursivelyGenerateRomans(placeholderIndex, number, romanString);
+}
+
+function determineIfHalfOrWholeDigit(placeholderValue) {
+  //determine if placeholderValue is whole or half digits (1000 vs 500) 
+  //and return correct divisor (used to generate the correct placeholderHalf)
+  while (placeholderValue >= 10) {
+    placeholderValue = placeholderValue / 10;
   }
+  return placeholderValue === 1 ? 2 : 5;
 }
 
 //concactenates the specified number of Roman Numeral Character onto string
 //if no quantity argument passed in, will add only one character
-function buildUpString(placeholderIndex, numAsString, placeholderQuantity = 1) {
+function buildUpString(placeholderValue, numAsString, placeholderQuantity = 1) {
   //switch placeholders array index to correct Roman Numeral
   let romanChar;
-  switch(placeholderIndex) {
-    case 0: 
+  switch(placeholderValue) {
+    case 1000: 
       romanChar = 'M';
       break;
-    case 1:
+    case 500:
       romanChar = 'D';
       break;
-    case 2: 
+    case 100: 
       romanChar = 'C';
       break;
-    case 3:
+    case 50:
       romanChar = 'L';
       break;
-    case 4: 
+    case 10: 
       romanChar = 'X';
       break;
     case 5: 
       romanChar = 'V';
       break;
-    case 6: 
+    case 1: 
       romanChar = 'I';
       break;
     default: 
@@ -117,7 +86,6 @@ function buildUpString(placeholderIndex, numAsString, placeholderQuantity = 1) {
   return numAsString;
 }
 
-
 console.log(intToRoman(39));
-console.log(intToRoman(193));
-console.log(intToRoman(3025));
+console.log(intToRoman(49));
+console.log(intToRoman(3925));
